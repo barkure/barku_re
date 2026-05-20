@@ -9,136 +9,90 @@
 {#if name === "blog"}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
-      d="M5 19l4.5-1 8.5-8.5-3.5-3.5L6 14.5 5 19Z"
-      fill="none"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="1.8"
-    />
-    <path
-      d="M13.75 6.25l3.5 3.5"
-      fill="none"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-width="1.8"
+      d="M6.94 14.033a30 30 0 0 0-.606 1.783c.96-.697 2.101-1.14 3.418-1.304c2.513-.314 4.746-1.973 5.876-4.058l-1.456-1.455l1.413-1.415l1-1.002c.43-.429.915-1.224 1.428-2.367c-5.593.867-9.018 4.291-11.074 9.818M17 8.997l1 1c-1 3-4 6-8 6.5q-4.003.5-5.002 5.5H3c1-6 3-20 18-20q-1.5 4.496-2.997 5.997z"
+      fill="currentColor"
     />
   </svg>
 {:else if name === "github"}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
-      d="M8 17.5c-1.6 0-3-1.2-3-2.8V9.6c0-1.7 1.5-3.1 3.2-3.1h1.1l1.1-1.8h3.2l1.1 1.8h1.1c1.7 0 3.2 1.4 3.2 3.1v5.1c0 1.6-1.4 2.8-3 2.8"
+      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5c.08-1.25-.27-2.48-1-3.5c.28-1.15.28-2.35 0-3.5c0 0-1 0-3 1.5c-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5c-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
       stroke-linejoin="round"
-      stroke-width="1.8"
+      stroke-width="2"
     />
-    <circle cx="9.5" cy="11.5" r="1" fill="currentColor" />
-    <circle cx="14.5" cy="11.5" r="1" fill="currentColor" />
     <path
-      d="M10 15c.6.4 1.3.6 2 .6s1.4-.2 2-.6"
+      d="M9 18c-4.51 2-5-2-7-2"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
-      stroke-width="1.8"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
   </svg>
 {:else if name === "telegram"}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
-      d="M20 5 4.8 10.8c-.7.3-.7 1.2 0 1.4l3.8 1.3 1.5 4.7c.2.6 1 .7 1.4.2l2.1-2.6 3.9 2.8c.6.4 1.4.1 1.5-.7L21 5.9c.1-.7-.6-1.2-1.2-.9Z"
-      fill="none"
-      stroke="currentColor"
-      stroke-linejoin="round"
-      stroke-width="1.8"
-    />
-    <path
-      d="m8.6 13.5 8.8-6.1-6.8 7.3"
+      d="M21 5L2 12.5l7 1M21 5l-2.5 15L9 13.5M21 5L9 13.5m0 0V19l3.249-3.277"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
       stroke-linejoin="round"
-      stroke-width="1.8"
+      stroke-width="1.5"
     />
   </svg>
 {:else if name === "email"}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <rect
-      x="4"
-      y="6.5"
-      width="16"
-      height="11"
-      rx="1.8"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-    />
     <path
-      d="m5.5 8 6.5 5 6.5-5"
+      d="m22 7l-8.991 5.727a2 2 0 0 1-2.009 0L2 7"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
       stroke-linejoin="round"
-      stroke-width="1.8"
+      stroke-width="2"
+    />
+    <rect
+      width="20"
+      height="16"
+      x="2"
+      y="4"
+      rx="2"
+      fill="none"
+      stroke="currentColor"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
   </svg>
 {:else if name === "friends"}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <circle
-      cx="9"
-      cy="10"
-      r="2.7"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-    />
-    <circle
-      cx="15.5"
-      cy="9.3"
-      r="2.2"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-    />
     <path
-      d="M4.8 18c.7-2.5 2.4-4 4.8-4s4.1 1.5 4.8 4"
+      d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
-      stroke-width="1.8"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
     <path
-      d="M13.5 17.4c.5-1.8 1.7-2.9 3.5-2.9 1.1 0 2.1.4 2.9 1.3"
+      d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
-      stroke-width="1.8"
+      stroke-linejoin="round"
+      stroke-width="2"
     />
   </svg>
 {:else}
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
-      d="M4 14.5 20 8"
-      fill="none"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-width="1.8"
-    />
-    <path
-      d="M13 8.7 16.5 6l3.5 1.7-1.7 4.4"
+      d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8L4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1l3 2l2 3l1-1v-3l3-2l3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2"
       fill="none"
       stroke="currentColor"
       stroke-linecap="round"
       stroke-linejoin="round"
-      stroke-width="1.8"
-    />
-    <path
-      d="M5 18h14"
-      fill="none"
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-width="1.8"
+      stroke-width="2"
     />
   </svg>
 {/if}

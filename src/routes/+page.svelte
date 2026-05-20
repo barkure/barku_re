@@ -6,12 +6,6 @@
 
 	const MOBILE_BREAKPOINT = 767;
 
-	let { data } = $props<{
-		data: {
-			heroTitleColor: string;
-		};
-	}>();
-
 	let contentShell: HTMLElement | null = null;
 	let isContentPinned = $state(false);
 
@@ -44,12 +38,12 @@
 <div class="site-shell bg-(--color-bg-darken) text-(--color-text)">
 	<section class="first-view">
 		<header class="hero-copy">
-			<h1 class="hero-title" style={`color: ${data.heroTitleColor};`}>
+			<h1 class="hero-title" style="color: var(--hero-title-color);">
 				<span>Barkure<span class="sp-break"></span></span>
 			</h1>
 			<p class="hero-subtitle">Builder / Open Sourceror / Toolmaker</p>
 			<p class="hero-intro">
-				Hi, I'm <span class="hero-intro-name" style={`color: ${data.heroTitleColor};`}>Barkure</span>,
+				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span>,
 				{heroIntroBody}
 			</p>
 		</header>

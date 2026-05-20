@@ -4,6 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="text-scale" content="scale" />
+    <script>
+      (() => {
+        const colors = [
+          "rgb(230, 6, 215)",
+          "rgb(0, 255, 255)",
+          "rgb(26, 255, 0)",
+          "rgb(255, 242, 0)",
+          "rgb(255, 128, 0)",
+          "rgb(255, 0, 102)",
+        ];
+        const fallback = colors[0];
+        const color = colors[Math.floor(Math.random() * colors.length)] || fallback;
+        document.documentElement.style.setProperty("--hero-title-color", color);
+      })();
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

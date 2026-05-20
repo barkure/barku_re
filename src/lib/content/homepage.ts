@@ -60,8 +60,8 @@ export const networkItems: NetworkItem[] = [
   },
   {
     icon: "friends",
-    label: "Friends",
-    href: "https://barku.re/friends.html",
+    label: "Links",
+    href: "/links",
     color: "rgb(26, 255, 0)",
   },
   {

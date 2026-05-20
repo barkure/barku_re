@@ -25,7 +25,7 @@
   --margin-side: 3.75rem;
   --dot-mask-size: clamp(14px, 1.35vw, 24px);
   --viewport-height: 100svh;
-  --content-mask-offset: 11.25rem;
+  --content-mask-offset: clamp(11.25rem, 14vw, 16rem);
   --content-mask-before: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0%,
@@ -144,6 +144,7 @@ a {
   z-index: 10;
   margin-top: 7.5rem;
   background: var(--color-bg-darken);
+  isolation: isolate;
 }
 
 .content-shell::before,
@@ -151,20 +152,28 @@ a {
   content: "";
   position: absolute;
   top: calc(-1 * var(--content-mask-offset));
-  left: 0;
+  left: -1px;
   height: var(--content-mask-offset);
-  width: 100%;
+  width: calc(100% + 2px);
   pointer-events: none;
 }
 
 .content-shell::before {
+  background: var(--color-bg-darken);
+}
+
+.content-shell::before {
+  -webkit-backdrop-filter: blur(0.5rem);
   backdrop-filter: blur(0.5rem);
+  -webkit-mask-image: var(--content-mask-before);
   mask-image: var(--content-mask-before);
 }
 
 .content-shell::after {
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 100%);
+  -webkit-backdrop-filter: blur(4rem);
   backdrop-filter: blur(4rem);
+  -webkit-mask-image: var(--content-mask-after);
   mask-image: var(--content-mask-after);
 }
 
