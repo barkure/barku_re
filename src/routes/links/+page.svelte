@@ -101,6 +101,10 @@
       padding: 1rem;
     }
 
+    .back-link {
+      font-size: 2rem;
+    }
+
     .links-title {
       margin-top: 1rem;
       font-size: 2.55rem;
