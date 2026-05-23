@@ -268,8 +268,8 @@
 
 	.slider-stage {
 		position: relative;
-		height: min(84vw, 49rem, calc(100vh - 17.25rem));
-		width: min(84vw, 49rem, calc(100vh - 17.25rem));
+		height: min(96vw, 62rem, calc(100vh - 11rem));
+		width: min(96vw, 62rem, calc(100vh - 11rem));
 		transform: scale(0.98);
 		transform-origin: 50% 100%;
 	}
