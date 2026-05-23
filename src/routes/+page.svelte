@@ -55,7 +55,10 @@
 
 	<main class="content-shell" class:is-pinned={isContentPinned} bind:this={contentShell}>
 		<section class="description-block" lang="en">
-			<p>Hi, I'm Barkure, {heroIntroBody}</p>
+			<p>
+				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span>,
+				{heroIntroBody}
+			</p>
 		</section>
 
 		<section class="tag-block">

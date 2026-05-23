@@ -21,11 +21,10 @@
 :root {
   --color-text: rgb(255, 255, 255);
   --color-bg-darken: #0b0b0b;
-  --blur-filter: blur(0.08rem);
   --margin-side: 3.75rem;
   --dot-mask-size: clamp(14px, 1.35vw, 24px);
   --viewport-height: 100svh;
-  --content-mask-offset: clamp(11.25rem, 14vw, 16rem);
+  --content-mask-offset: clamp(13rem, 16vw, 18rem);
   --content-mask-before: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0%,
@@ -91,7 +90,6 @@ a {
   height: 100vh;
   height: var(--viewport-height);
   flex-direction: column;
-  filter: var(--blur-filter);
 }
 
 .hero-copy {
@@ -163,24 +161,14 @@ a {
 }
 
 .content-shell::before {
-  -webkit-backdrop-filter: blur(0.5rem);
-  backdrop-filter: blur(0.5rem);
   -webkit-mask-image: var(--content-mask-before);
   mask-image: var(--content-mask-before);
 }
 
 .content-shell::after {
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 100%);
-  -webkit-backdrop-filter: blur(4rem);
-  backdrop-filter: blur(4rem);
   -webkit-mask-image: var(--content-mask-after);
   mask-image: var(--content-mask-after);
-}
-
-.description-block,
-.tag-block,
-.site-footer {
-  filter: var(--blur-filter);
 }
 
 .description-block {
@@ -275,7 +263,6 @@ a {
 
 @media (max-width: 767px) {
   :root {
-    --blur-filter: blur(0.04rem);
     --margin-side: 1rem;
     --dot-mask-size: 12px;
     --content-mask-offset: 5.5rem;
