@@ -18,10 +18,10 @@
 		alt: string;
 	};
 
-	let { slides, delay = 3800, gap = 800 } = $props<{
+	let { slides, gap = 800, initialDelay = gap } = $props<{
 		slides: Slide[];
-		delay?: number;
 		gap?: number;
+		initialDelay?: number;
 	}>();
 
 	const transitionDuration = 2;
@@ -231,7 +231,7 @@
 				loadedTextures[loadedTextures.length > 1 ? 1 : 0];
 			renderScene();
 
-			queueTransition(delay);
+			queueTransition(initialDelay);
 		});
 
 		return () => {
