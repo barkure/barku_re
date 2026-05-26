@@ -4,13 +4,13 @@ export type Slide = {
 };
 
 export type NetworkItem = {
-  icon: NetworkIconName;
+  icon: IconName;
   label: string;
   href: string;
   color: string;
 };
 
-export type NetworkIconName = "blog" | "github" | "telegram" | "email" | "friends" | "travelling";
+export type IconName = "blog" | "github" | "telegram" | "email" | "friends" | "travelling";
 
 export const heroTitleColors = [
   "rgb(230, 6, 215)",

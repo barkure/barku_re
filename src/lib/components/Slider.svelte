@@ -10,7 +10,7 @@
 		TextureLoader,
 		Vector2,
 		WebGLRenderer,
-		type Texture
+		type Texture,
 	} from 'three';
 
 	type Slide = {
@@ -18,7 +18,11 @@
 		alt: string;
 	};
 
-	let { slides, gap = 800, initialDelay = gap } = $props<{
+	let {
+		slides,
+		gap = 800,
+		initialDelay = gap,
+	} = $props<{
 		slides: Slide[];
 		gap?: number;
 		initialDelay?: number;
@@ -90,7 +94,7 @@
 		const renderer = new WebGLRenderer({
 			alpha: true,
 			antialias: false,
-			powerPreference: 'low-power'
+			powerPreference: 'low-power',
 		});
 		renderer.setClearColor(0x000000, 0);
 
@@ -104,11 +108,11 @@
 				nextImage: { value: null },
 				dispFactor: { value: 0 },
 				intensity: { value: 0.3 },
-				resolution: { value: new Vector2(1, 1) }
+				resolution: { value: new Vector2(1, 1) },
 			},
 			vertexShader,
 			fragmentShader,
-			transparent: true
+			transparent: true,
 		});
 
 		const mesh = new Mesh(new PlaneGeometry(2, 2), material);
@@ -146,7 +150,7 @@
 						resolve(texture);
 					},
 					undefined,
-					reject
+					reject,
 				);
 			});
 
@@ -220,15 +224,14 @@
 		window.addEventListener('resize', resize);
 		document.addEventListener('visibilitychange', syncVisibility);
 
-		Promise.all(slides.map((slide) => loadTexture(slide.src))).then((loadedTextures) => {
+		Promise.all(slides.map((slide: Slide) => loadTexture(slide.src))).then((loadedTextures) => {
 			if (cancelled || loadedTextures.length === 0) {
 				return;
 			}
 
 			textures = loadedTextures;
 			material.uniforms.currentImage.value = loadedTextures[0];
-			material.uniforms.nextImage.value =
-				loadedTextures[loadedTextures.length > 1 ? 1 : 0];
+			material.uniforms.nextImage.value = loadedTextures[loadedTextures.length > 1 ? 1 : 0];
 			renderScene();
 
 			queueTransition(initialDelay);

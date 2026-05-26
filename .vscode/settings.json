@@ -2,7 +2,7 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "npm.scriptRunner": "vp",
+  "npm.scriptRunner": "bun",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
@@ -16,7 +16,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
-  "oxc.fmt.configPath": "./vite.config.ts",
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {

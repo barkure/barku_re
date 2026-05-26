@@ -4,16 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vp dev",
-    "build": "vp build",
-    "preview": "vp preview",
-    "prepare": "vp config && svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "bun run lint && bun run format:check && bun run typecheck",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
-  "dependencies": {
-    "iconify-icon": "^3.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.57.0",
@@ -21,13 +24,14 @@
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^24.10.1",
     "@types/three": "^0.184.1",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
     "svelte": "^5.55.2",
     "svelte-check": "^4.4.6",
     "tailwindcss": "^4.2.2",
     "three": "^0.181.1",
-    "typescript": "^6.0.2",
-    "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "typescript": "^5.9.3",
+    "vite": "^8.0.9"
   },
-  "packageManager": "pnpm@11.1.3"
+  "packageManager": "bun@1.3.14"
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import NetworkIcon from '$lib/components/NetworkIcon.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import Slider from '$lib/components/Slider.svelte';
 	import { heroIntroBody, heroSlides, networkItems } from '$lib/content/homepage';
 
@@ -26,7 +26,6 @@
 			window.removeEventListener('resize', syncPinnedState);
 		};
 	});
-
 </script>
 
 <svelte:head>
@@ -43,7 +42,8 @@
 			</h1>
 			<p class="hero-subtitle">Builder / Open Sourceror / Toolmaker</p>
 			<p class="hero-intro">
-				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span>,
+				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span
+				>,
 				{heroIntroBody}
 			</p>
 		</header>
@@ -56,7 +56,8 @@
 	<main class="content-shell" class:is-pinned={isContentPinned} bind:this={contentShell}>
 		<section class="description-block" lang="en">
 			<p>
-				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span>,
+				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span
+				>,
 				{heroIntroBody}
 			</p>
 		</section>
@@ -67,7 +68,7 @@
 					<li class="network-item" style={`--icon-color: ${item.color};`}>
 						<span class="tag-item">
 							<span class="tag-icon">
-								<NetworkIcon name={item.icon} />
+								<Icon name={item.icon} />
 							</span>
 							<a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
 						</span>
