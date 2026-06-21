@@ -9,6 +9,8 @@
 	let contentShell: HTMLElement | null = null;
 	let isContentPinned = $state(false);
 
+	const isExternalHref = (href: string) => !href.startsWith('/');
+
 	onMount(() => {
 		const syncPinnedState = () => {
 			isContentPinned =
@@ -70,7 +72,11 @@
 							<span class="tag-icon">
 								<Icon name={item.icon} />
 							</span>
-							<a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
+							<a
+								href={item.href}
+								target={isExternalHref(item.href) ? '_blank' : undefined}
+								rel={isExternalHref(item.href) ? 'noreferrer' : undefined}>{item.label}</a
+							>
 						</span>
 					</li>
 				{/each}

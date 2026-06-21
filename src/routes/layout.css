@@ -158,9 +158,6 @@ a {
 
 .content-shell::before {
   background: var(--color-bg-darken);
-}
-
-.content-shell::before {
   -webkit-mask-image: var(--content-mask-before);
   mask-image: var(--content-mask-before);
 }
@@ -226,17 +223,10 @@ a {
   color: var(--icon-color);
 }
 
-.tag-icon :global(svg) {
+.tag-icon svg {
   display: block;
   width: 0.9em;
   height: 0.9em;
-}
-
-.site-footer {
-  margin-top: 4.5rem;
-  padding: 0 var(--margin-side) calc(var(--margin-side) - 1rem);
-  font-size: 3.75rem;
-  font-weight: 700;
 }
 
 .sp-break {
@@ -335,12 +325,6 @@ a {
     width: 100%;
     grid-template-columns: minmax(0, 1fr);
     row-gap: 0.85rem;
-  }
-
-  .site-footer {
-    margin-top: 2rem;
-    padding: 0 var(--margin-side) calc(var(--margin-side) * 2 - 0.5rem);
-    font-size: 1.625rem;
   }
 
   .sp-break {

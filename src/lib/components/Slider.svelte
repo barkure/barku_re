@@ -1,21 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		LinearFilter,
-		Mesh,
-		OrthographicCamera,
-		PlaneGeometry,
-		Scene,
-		ShaderMaterial,
-		TextureLoader,
-		Vector2,
-		WebGLRenderer,
-		type Texture,
-	} from 'three';
+	import type { Texture } from 'three';
 
 	type Slide = {
 		src: string;
-		alt: string;
 	};
 
 	let {
@@ -48,7 +36,6 @@
 		uniform sampler2D nextImage;
 		uniform float dispFactor;
 		uniform float intensity;
-		uniform vec2 resolution;
 
 		float luminance(vec4 color) {
 			return dot(color.rgb, vec3(0.299, 0.587, 0.114));
@@ -89,153 +76,224 @@
 		let transitionTimeout: ReturnType<typeof setTimeout> | undefined;
 		let currentIndex = 0;
 		let isTransitioning = false;
-		let textures: Texture[] = [];
+		let textures: Array<Texture | undefined> = Array(slides.length);
+		let renderer: import('three').WebGLRenderer | undefined;
+		let mesh: import('three').Mesh | undefined;
+		let material: import('three').ShaderMaterial | undefined;
+		let renderScene = () => {};
+		let resize = () => {};
+		let syncVisibility = () => {};
+		let queueTransition = (_wait: number) => {};
 
-		const renderer = new WebGLRenderer({
-			alpha: true,
-			antialias: false,
-			powerPreference: 'low-power',
-		});
-		renderer.setClearColor(0x000000, 0);
+		void (async () => {
+			const {
+				LinearFilter,
+				Mesh,
+				OrthographicCamera,
+				PlaneGeometry,
+				Scene,
+				ShaderMaterial,
+				TextureLoader,
+				WebGLRenderer,
+			} = await import('three');
 
-		const scene = new Scene();
-		const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-		camera.position.z = 1;
+			if (cancelled || !stage) return;
 
-		const material = new ShaderMaterial({
-			uniforms: {
-				currentImage: { value: null },
-				nextImage: { value: null },
-				dispFactor: { value: 0 },
-				intensity: { value: 0.3 },
-				resolution: { value: new Vector2(1, 1) },
-			},
-			vertexShader,
-			fragmentShader,
-			transparent: true,
-		});
+			renderer = new WebGLRenderer({
+				alpha: true,
+				antialias: false,
+				powerPreference: 'low-power',
+			});
+			renderer.setClearColor(0x000000, 0);
 
-		const mesh = new Mesh(new PlaneGeometry(2, 2), material);
-		scene.add(mesh);
-		stage.appendChild(renderer.domElement);
+			const scene = new Scene();
+			const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+			camera.position.z = 1;
 
-		const renderScene = () => {
-			if (!cancelled) {
-				renderer.render(scene, camera);
-			}
-		};
-
-		const updatePixelRatio = () => {
-			const maxPixelRatio = window.innerWidth <= mobileBreakpoint ? 1.25 : 1.75;
-			renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
-		};
-
-		const resize = () => {
-			if (!stage) return;
-			updatePixelRatio();
-			const size = Math.min(stage.clientWidth, stage.clientHeight);
-			renderer.setSize(size, size, false);
-			material.uniforms.resolution.value.set(size, size);
-			renderScene();
-		};
-
-		const loader = new TextureLoader();
-		const loadTexture = (src: string) =>
-			new Promise<Texture>((resolve, reject) => {
-				loader.load(
-					src,
-					(texture) => {
-						texture.minFilter = LinearFilter;
-						texture.magFilter = LinearFilter;
-						resolve(texture);
-					},
-					undefined,
-					reject,
-				);
+			material = new ShaderMaterial({
+				uniforms: {
+					currentImage: { value: null },
+					nextImage: { value: null },
+					dispFactor: { value: 0 },
+					intensity: { value: 0.3 },
+				},
+				vertexShader,
+				fragmentShader,
+				transparent: true,
 			});
 
-		const queueTransition = (wait: number) => {
-			if (transitionTimeout) {
-				clearTimeout(transitionTimeout);
-			}
+			mesh = new Mesh(new PlaneGeometry(2, 2), material);
+			scene.add(mesh);
+			stage.appendChild(renderer.domElement);
 
-			if (cancelled || document.hidden || textures.length <= 1) {
-				return;
-			}
-
-			transitionTimeout = setTimeout(() => {
-				if (!cancelled && !document.hidden && !isTransitioning) {
-					startTransition();
+			renderScene = () => {
+				if (!cancelled && renderer) {
+					renderer.render(scene, camera);
 				}
-			}, wait);
-		};
+			};
 
-		const startTransition = () => {
-			if (textures.length <= 1) {
-				return;
-			}
+			const updatePixelRatio = () => {
+				const maxPixelRatio = window.innerWidth <= mobileBreakpoint ? 1.25 : 1.75;
+				renderer?.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+			};
 
-			isTransitioning = true;
-			const nextIndex = (currentIndex + 1) % textures.length;
-			material.uniforms.currentImage.value = textures[currentIndex];
-			material.uniforms.nextImage.value = textures[nextIndex];
-			material.uniforms.dispFactor.value = 0;
-
-			const startedAt = performance.now();
-
-			const tick = (now: number) => {
-				if (cancelled) return;
-
-				const progress = Math.min((now - startedAt) / (transitionDuration * 1000), 1);
-				material.uniforms.dispFactor.value = easeInOutExpo(progress);
+			resize = () => {
+				if (!stage || !renderer) return;
+				updatePixelRatio();
+				const size = Math.min(stage.clientWidth, stage.clientHeight);
+				renderer.setSize(size, size, false);
 				renderScene();
+			};
 
-				if (progress < 1) {
-					transitionRafId = requestAnimationFrame(tick);
+			const loader = new TextureLoader();
+			const loadTexture = (src: string) =>
+				new Promise<Texture>((resolve, reject) => {
+					loader.load(
+						src,
+						(texture) => {
+							texture.minFilter = LinearFilter;
+							texture.magFilter = LinearFilter;
+							resolve(texture);
+						},
+						undefined,
+						reject,
+					);
+				});
+
+			const loadedTextureCount = () => textures.filter(Boolean).length;
+
+			const getNextLoadedIndex = () => {
+				for (let offset = 1; offset < textures.length; offset += 1) {
+					const index = (currentIndex + offset) % textures.length;
+					if (textures[index]) return index;
+				}
+
+				return null;
+			};
+
+			const loadSlideTexture = async (index: number) => {
+				const texture = await loadTexture(slides[index].src);
+				if (cancelled) {
+					texture.dispose();
 					return;
 				}
 
-				isTransitioning = false;
-				currentIndex = nextIndex;
-				material.uniforms.currentImage.value = textures[currentIndex];
+				textures[index] = texture;
+				return texture;
+			};
+
+			const preloadRemainingTextures = async (startIndex: number) => {
+				for (let index = startIndex; index < slides.length; index += 1) {
+					if (cancelled) return;
+
+					try {
+						await loadSlideTexture(index);
+						if (loadedTextureCount() > 1 && !isTransitioning && !transitionTimeout) {
+							queueTransition(gap);
+						}
+					} catch (error) {
+						console.error(`Failed to load slider image: ${slides[index].src}`, error);
+					}
+				}
+			};
+
+			queueTransition = (wait: number) => {
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+				}
+
+				if (cancelled || document.hidden || loadedTextureCount() <= 1) {
+					return;
+				}
+
+				transitionTimeout = setTimeout(() => {
+					transitionTimeout = undefined;
+					if (!cancelled && !document.hidden && !isTransitioning) {
+						startTransition();
+					}
+				}, wait);
+			};
+
+			const startTransition = () => {
+				if (!material) return;
+
+				const currentTexture = textures[currentIndex];
+				const nextIndex = getNextLoadedIndex();
+				const nextTexture = nextIndex === null ? undefined : textures[nextIndex];
+
+				if (!currentTexture || !nextTexture || nextIndex === null) {
+					return;
+				}
+
+				isTransitioning = true;
+				material.uniforms.currentImage.value = currentTexture;
+				material.uniforms.nextImage.value = nextTexture;
 				material.uniforms.dispFactor.value = 0;
+
+				const startedAt = performance.now();
+
+				const tick = (now: number) => {
+					if (cancelled || !material) return;
+
+					const progress = Math.min((now - startedAt) / (transitionDuration * 1000), 1);
+					material.uniforms.dispFactor.value = easeInOutExpo(progress);
+					renderScene();
+
+					if (progress < 1) {
+						transitionRafId = requestAnimationFrame(tick);
+						return;
+					}
+
+					isTransitioning = false;
+					currentIndex = nextIndex;
+					material.uniforms.currentImage.value = nextTexture;
+					material.uniforms.dispFactor.value = 0;
+					renderScene();
+					queueTransition(gap);
+				};
+
+				transitionRafId = requestAnimationFrame(tick);
+			};
+
+			syncVisibility = () => {
+				if (document.hidden) {
+					if (transitionTimeout) {
+						clearTimeout(transitionTimeout);
+					}
+					cancelAnimationFrame(transitionRafId);
+					isTransitioning = false;
+					return;
+				}
+
 				renderScene();
 				queueTransition(gap);
 			};
 
-			transitionRafId = requestAnimationFrame(tick);
-		};
+			resize();
+			window.addEventListener('resize', resize);
+			document.addEventListener('visibilitychange', syncVisibility);
 
-		const syncVisibility = () => {
-			if (document.hidden) {
-				if (transitionTimeout) {
-					clearTimeout(transitionTimeout);
+			try {
+				const firstTexture = await loadSlideTexture(0);
+				if (!firstTexture || !material) return;
+
+				material.uniforms.currentImage.value = firstTexture;
+				material.uniforms.nextImage.value = firstTexture;
+				renderScene();
+
+				if (slides.length > 1) {
+					await loadSlideTexture(1);
+					if (!cancelled && textures[1]) {
+						material.uniforms.nextImage.value = textures[1];
+						queueTransition(initialDelay);
+					}
+
+					void preloadRemainingTextures(2);
 				}
-				cancelAnimationFrame(transitionRafId);
-				isTransitioning = false;
-				return;
+			} catch (error) {
+				console.error(`Failed to load slider image: ${slides[0].src}`, error);
 			}
-
-			renderScene();
-			queueTransition(gap);
-		};
-
-		resize();
-		window.addEventListener('resize', resize);
-		document.addEventListener('visibilitychange', syncVisibility);
-
-		Promise.all(slides.map((slide: Slide) => loadTexture(slide.src))).then((loadedTextures) => {
-			if (cancelled || loadedTextures.length === 0) {
-				return;
-			}
-
-			textures = loadedTextures;
-			material.uniforms.currentImage.value = loadedTextures[0];
-			material.uniforms.nextImage.value = loadedTextures[loadedTextures.length > 1 ? 1 : 0];
-			renderScene();
-
-			queueTransition(initialDelay);
-		});
+		})();
 
 		return () => {
 			cancelled = true;
@@ -243,11 +301,11 @@
 			document.removeEventListener('visibilitychange', syncVisibility);
 			if (transitionTimeout) clearTimeout(transitionTimeout);
 			cancelAnimationFrame(transitionRafId);
-			textures.forEach((texture) => texture.dispose());
-			mesh.geometry.dispose();
-			material.dispose();
-			renderer.dispose();
-			if (stage?.contains(renderer.domElement)) {
+			textures.forEach((texture) => texture?.dispose());
+			mesh?.geometry.dispose();
+			material?.dispose();
+			renderer?.dispose();
+			if (renderer && stage?.contains(renderer.domElement)) {
 				stage.removeChild(renderer.domElement);
 			}
 		};
