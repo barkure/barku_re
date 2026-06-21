@@ -3,13 +3,10 @@ export type Slide = {
 };
 
 export type NetworkItem = {
-  icon: IconName;
+  icon: string;
   label: string;
   href: string;
-  color: string;
 };
-
-export type IconName = "blog" | "github" | "telegram" | "email" | "friends" | "travelling";
 
 export const heroIntroBody =
   "a geophysics student at Central South University, and I do a bit of development.";
@@ -25,39 +22,38 @@ export const heroSlides: Slide[] = [
 
 export const networkItems: NetworkItem[] = [
   {
-    icon: "blog",
+    icon: "mdi:fountain-pen-tip",
     label: "Blog",
     href: "https://blog.barku.re",
-    color: "rgb(255, 128, 0)",
   },
   {
-    icon: "github",
+    icon: "mdi:github",
     label: "GitHub",
     href: "https://github.com/barkure",
-    color: "rgb(168, 85, 247)",
   },
   {
-    icon: "telegram",
+    icon: "mdi:telegram",
     label: "Telegram",
     href: "https://t.me/barkure",
-    color: "rgb(0, 255, 255)",
   },
   {
-    icon: "email",
+    icon: "lineicons:x",
+    label: "X, formerly Twitter",
+    href: "https://x.com/TheBarkure",
+  },
+  {
+    icon: "mdi:email",
     label: "Email",
-    href: "mailto:XINYAO_QI@outlook.com",
-    color: "rgb(230, 6, 215)",
+    href: "mailto:Xinyao_Qi@outlook.com",
   },
   {
-    icon: "friends",
+    icon: "mdi:link",
     label: "Links",
     href: "/links",
-    color: "rgb(26, 255, 0)",
   },
   {
-    icon: "travelling",
+    icon: "mdi:train",
     label: "Travelling",
     href: "https://www.travellings.cn/go.html",
-    color: "rgb(255, 242, 0)",
   },
 ];

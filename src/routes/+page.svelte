@@ -1,15 +1,40 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
-	import Icon from '$lib/components/Icon.svelte';
 	import Slider from '$lib/components/Slider.svelte';
 	import { heroIntroBody, heroSlides, networkItems } from '$lib/content/homepage';
 
 	const MOBILE_BREAKPOINT = 767;
+	const EMAIL_ADDRESS = 'Xinyao_Qi@outlook.com';
 
 	let contentShell: HTMLElement | null = null;
 	let isContentPinned = $state(false);
+	let hoveredNetworkAction = $state('');
+	let hoveredNetworkTarget = $state('');
 
 	const isExternalHref = (href: string) => !href.startsWith('/');
+	const isEmailHref = (href: string) => href.startsWith('mailto:');
+	const getNetworkTarget = (href: string, label: string) => (isEmailHref(href) ? EMAIL_ADDRESS : label);
+	const getNetworkAction = (href: string) => (isEmailHref(href) ? 'Email:' : 'Go to:');
+
+	const syncNetworkTarget = (href: string, label: string) => {
+		hoveredNetworkAction = getNetworkAction(href);
+		hoveredNetworkTarget = getNetworkTarget(href, label);
+	};
+
+	const clearNetworkTarget = () => {
+		hoveredNetworkAction = '';
+		hoveredNetworkTarget = '';
+	};
+
+	const handleNetworkClick = async (event: MouseEvent, href: string) => {
+		if (!isEmailHref(href)) return;
+
+		event.preventDefault();
+		await navigator.clipboard.writeText(EMAIL_ADDRESS);
+		hoveredNetworkAction = 'Copied!';
+		hoveredNetworkTarget = '';
+	};
 
 	onMount(() => {
 		const syncPinnedState = () => {
@@ -67,20 +92,33 @@
 		<section class="tag-block">
 			<ul>
 				{#each networkItems as item}
-					<li class="network-item" style={`--icon-color: ${item.color};`}>
-						<span class="tag-item">
-							<span class="tag-icon">
-								<Icon name={item.icon} />
+					<li class="network-item">
+						<a
+							class="tag-item"
+							href={item.href}
+							target={isExternalHref(item.href) && !isEmailHref(item.href) ? '_blank' : undefined}
+							rel={isExternalHref(item.href) && !isEmailHref(item.href) ? 'noreferrer' : undefined}
+							aria-label={item.label}
+							onmouseenter={() => syncNetworkTarget(item.href, item.label)}
+							onmouseleave={clearNetworkTarget}
+							onfocus={() => syncNetworkTarget(item.href, item.label)}
+							onblur={clearNetworkTarget}
+							onclick={(event) => handleNetworkClick(event, item.href)}
+						>
+							<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
+								<Icon icon={item.icon} />
 							</span>
-							<a
-								href={item.href}
-								target={isExternalHref(item.href) ? '_blank' : undefined}
-								rel={isExternalHref(item.href) ? 'noreferrer' : undefined}>{item.label}</a
-							>
-						</span>
+							<span class="tag-label">{item.label}</span>
+						</a>
 					</li>
 				{/each}
 			</ul>
+			<p class="tag-target" aria-live="polite">
+				{#if hoveredNetworkAction}
+					<span class="tag-target-prefix">{hoveredNetworkAction}</span>
+					{hoveredNetworkTarget}
+				{/if}
+			</p>
 		</section>
 	</main>
 </div>
