@@ -11,6 +11,8 @@
 	let isContentPinned = $state(false);
 	let hoveredNetworkAction = $state('');
 	let hoveredNetworkTarget = $state('');
+	let copyNoticeVisible = $state(false);
+	let copyNoticeTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	const isExternalHref = (href: string) => !href.startsWith('/');
 	const isEmailHref = (href: string) => href.startsWith('mailto:');
@@ -34,6 +36,12 @@
 		await navigator.clipboard.writeText(EMAIL_ADDRESS);
 		hoveredNetworkAction = 'Copied!';
 		hoveredNetworkTarget = '';
+		copyNoticeVisible = true;
+		if (copyNoticeTimeout) clearTimeout(copyNoticeTimeout);
+		copyNoticeTimeout = setTimeout(() => {
+			copyNoticeVisible = false;
+			copyNoticeTimeout = undefined;
+		}, 2000);
 	};
 
 	onMount(() => {
@@ -51,6 +59,7 @@
 		return () => {
 			window.removeEventListener('scroll', syncPinnedState);
 			window.removeEventListener('resize', syncPinnedState);
+			if (copyNoticeTimeout) clearTimeout(copyNoticeTimeout);
 		};
 	});
 </script>
@@ -119,6 +128,9 @@
 					{hoveredNetworkTarget}
 				{/if}
 			</p>
+			{#if copyNoticeVisible}
+				<p class="copy-notice" aria-live="polite">Copied to clipboard.</p>
+			{/if}
 		</section>
 	</main>
 </div>
