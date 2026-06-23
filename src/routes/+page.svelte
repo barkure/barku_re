@@ -5,7 +5,7 @@
 	import { heroIntroBody, heroSlides, networkItems } from '$lib/content/homepage';
 
 	const MOBILE_BREAKPOINT = 767;
-	const EMAIL_ADDRESS = 'Xinyao_Qi@outlook.com';
+	const EMAIL_ADDRESS = 'hi@barku.re';
 
 	let contentShell: HTMLElement | null = null;
 	let isContentPinned = $state(false);

@@ -44,7 +44,7 @@ export const networkItems: NetworkItem[] = [
   {
     icon: "mdi:email",
     label: "Email",
-    href: "mailto:Xinyao_Qi@outlook.com",
+    href: "mailto:hi@barku.re",
   },
   {
     icon: "bx:link",
