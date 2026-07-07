@@ -29,10 +29,7 @@
 		hoveredNetworkTarget = '';
 	};
 
-	const handleNetworkClick = async (event: MouseEvent, href: string) => {
-		if (!isEmailHref(href)) return;
-
-		event.preventDefault();
+	const copyEmailAddress = async () => {
 		await navigator.clipboard.writeText(EMAIL_ADDRESS);
 		hoveredNetworkAction = 'Copied!';
 		hoveredNetworkTarget = '';
@@ -102,23 +99,40 @@
 			<ul>
 				{#each networkItems as item}
 					<li class="network-item">
-						<a
-							class="tag-item"
-							href={item.href}
-							target={isExternalHref(item.href) && !isEmailHref(item.href) ? '_blank' : undefined}
-							rel={isExternalHref(item.href) && !isEmailHref(item.href) ? 'noreferrer' : undefined}
-							aria-label={item.label}
-							onmouseenter={() => syncNetworkTarget(item.href, item.label)}
-							onmouseleave={clearNetworkTarget}
-							onfocus={() => syncNetworkTarget(item.href, item.label)}
-							onblur={clearNetworkTarget}
-							onclick={(event) => handleNetworkClick(event, item.href)}
-						>
-							<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
-								<Icon icon={item.icon} />
-							</span>
-							<span class="tag-label">{item.label}</span>
-						</a>
+						{#if isEmailHref(item.href)}
+							<button
+								class="tag-item"
+								type="button"
+								aria-label="Copy email address"
+								onmouseenter={() => syncNetworkTarget(item.href, item.label)}
+								onmouseleave={clearNetworkTarget}
+								onfocus={() => syncNetworkTarget(item.href, item.label)}
+								onblur={clearNetworkTarget}
+								onclick={copyEmailAddress}
+							>
+								<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
+									<Icon icon={item.icon} />
+								</span>
+								<span class="tag-label">{item.label}</span>
+							</button>
+						{:else}
+							<a
+								class="tag-item"
+								href={item.href}
+								target={isExternalHref(item.href) ? '_blank' : undefined}
+								rel={isExternalHref(item.href) ? 'noreferrer' : undefined}
+								aria-label={item.label}
+								onmouseenter={() => syncNetworkTarget(item.href, item.label)}
+								onmouseleave={clearNetworkTarget}
+								onfocus={() => syncNetworkTarget(item.href, item.label)}
+								onblur={clearNetworkTarget}
+							>
+								<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
+									<Icon icon={item.icon} />
+								</span>
+								<span class="tag-label">{item.label}</span>
+							</a>
+						{/if}
 					</li>
 				{/each}
 			</ul>

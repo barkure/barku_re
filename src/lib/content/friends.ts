@@ -14,7 +14,5 @@ export const friendLinks: FriendLink[] = [
   { href: "https://cyp0633.icu/", label: "cyp0633's Blog" },
   { href: "https://www.octautumn.cn/", label: "拾秋" },
   { href: "https://www.grtsinry43.com/", label: "Grtsinry43" },
-  { href: "https://vcholerae1.github.io/", label: "V.cholerae" },
-  { href: "https://pourrevenir.github.io/", label: "PourRevenir" },
   { href: "https://takuron.com", label: "Takuron" },
 ];
