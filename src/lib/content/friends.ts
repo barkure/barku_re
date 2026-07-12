@@ -6,7 +6,7 @@ export type FriendLink = {
 export const friendLinks: FriendLink[] = [
   { href: "https://musenxi.com/", label: "沐森西 の 博客" },
   { href: "https://ilimeng.cn/", label: "离梦博客" },
-  { href: "https://assbbs.com/", label: "屌丝论坛" },
+  { href: "https://assbbs.com/", label: "Assbbs" },
   { href: "https://blog.yuugu.re/", label: "夕暮れ" },
   { href: "https://blog.nwn.moe/", label: "籽夏小屋" },
   { href: "https://www.miaoer.net", label: "喵二" },
