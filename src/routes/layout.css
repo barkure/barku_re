@@ -9,6 +9,8 @@
 }
 
 :root {
+  /* Original brand blue on SDR/sRGB. */
+  --hero-title-color: rgb(0, 96, 255);
   --color-text: rgb(255, 255, 255);
   --color-bg-darken: #0b0b0b;
   --margin-side: 3.75rem;
@@ -38,6 +40,29 @@
     rgba(0, 0, 0, 0.951) 91.9%,
     #000 100%
   );
+}
+
+/* Same brand blue, wider gamut on P3 panels. */
+@media (color-gamut: p3) {
+  :root {
+    --hero-title-color: color(display-p3 0.1 0.34 1);
+  }
+}
+
+/* On HDR-capable displays, lift luminance while keeping the hue. */
+@media (dynamic-range: high) {
+  :root {
+    --hero-title-color: color(display-p3 0.12 0.38 1);
+  }
+}
+
+/* True HDR headroom where CSS Color HDR is implemented. */
+@supports (color: color(rec2100-linear 0 0 0)) {
+  @media (dynamic-range: high) {
+    :root {
+      --hero-title-color: color(rec2100-linear 0.04 0.16 1.75);
+    }
+  }
 }
 
 html {
@@ -137,6 +162,7 @@ a {
   font-weight: 700;
   line-height: 1;
   font-family: "Roboto", Arial, sans-serif;
+  dynamic-range-limit: no-limit;
 }
 
 .hero-subtitle {
@@ -155,6 +181,7 @@ a {
 
 .hero-intro-name {
   font-weight: 700;
+  dynamic-range-limit: no-limit;
 }
 
 .hero-media {
