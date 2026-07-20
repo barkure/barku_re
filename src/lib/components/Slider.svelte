@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Texture } from 'three';
 
 	type Slide = {
 		src: string;
@@ -18,24 +17,27 @@
 
 	const transitionDuration = 2;
 	const mobileBreakpoint = 767;
-	let stage: HTMLDivElement | null = null;
+	const intensity = 0.3;
 
-	const vertexShader = `
+	const vertexShaderSource = `
+		attribute vec2 aPosition;
 		varying vec2 vUv;
 
 		void main() {
-			vUv = uv;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			vUv = aPosition * 0.5 + 0.5;
+			gl_Position = vec4(aPosition, 0.0, 1.0);
 		}
 	`;
 
-	const fragmentShader = `
+	const fragmentShaderSource = `
+		precision mediump float;
+
 		varying vec2 vUv;
 
-		uniform sampler2D currentImage;
-		uniform sampler2D nextImage;
-		uniform float dispFactor;
-		uniform float intensity;
+		uniform sampler2D uCurrentImage;
+		uniform sampler2D uNextImage;
+		uniform float uDispFactor;
+		uniform float uIntensity;
 
 		float luminance(vec4 color) {
 			return dot(color.rgb, vec3(0.299, 0.587, 0.114));
@@ -43,19 +45,19 @@
 
 		void main() {
 			vec2 uv = vUv;
-			vec4 currentSample = texture2D(currentImage, uv);
-			vec4 nextSample = texture2D(nextImage, uv);
+			vec4 currentSample = texture2D(uCurrentImage, uv);
+			vec4 nextSample = texture2D(uNextImage, uv);
 
 			float nextLum = luminance(nextSample);
 			float currentLum = luminance(currentSample);
 
-			vec2 currentUv = vec2(uv.x, uv.y + dispFactor * nextLum * intensity);
-			vec2 nextUv = vec2(uv.x, uv.y + (1.0 - dispFactor) * currentLum * intensity);
+			vec2 currentUv = vec2(uv.x, uv.y + uDispFactor * nextLum * uIntensity);
+			vec2 nextUv = vec2(uv.x, uv.y + (1.0 - uDispFactor) * currentLum * uIntensity);
 
-			vec4 currentDistorted = texture2D(currentImage, currentUv);
-			vec4 nextDistorted = texture2D(nextImage, nextUv);
+			vec4 currentDistorted = texture2D(uCurrentImage, currentUv);
+			vec4 nextDistorted = texture2D(uNextImage, nextUv);
 
-			gl_FragColor = mix(currentDistorted, nextDistorted, dispFactor);
+			gl_FragColor = mix(currentDistorted, nextDistorted, uDispFactor);
 		}
 	`;
 
@@ -65,6 +67,8 @@
 		if (t < 0.5) return Math.pow(2, 20 * t - 10) / 2;
 		return (2 - Math.pow(2, -20 * t + 10)) / 2;
 	};
+
+	let stage: HTMLDivElement | null = null;
 
 	onMount(() => {
 		if (!stage || slides.length === 0) {
@@ -76,224 +80,302 @@
 		let transitionTimeout: ReturnType<typeof setTimeout> | undefined;
 		let currentIndex = 0;
 		let isTransitioning = false;
-		let textures: Array<Texture | undefined> = Array(slides.length);
-		let renderer: import('three').WebGLRenderer | undefined;
-		let mesh: import('three').Mesh | undefined;
-		let material: import('three').ShaderMaterial | undefined;
+		let textures: Array<WebGLTexture | undefined> = Array(slides.length);
+		let gl: WebGLRenderingContext | null = null;
+		let program: WebGLProgram | null = null;
+		let buffer: WebGLBuffer | null = null;
+		let canvas: HTMLCanvasElement | null = null;
+
+		let uCurrentImage: WebGLUniformLocation | null = null;
+		let uNextImage: WebGLUniformLocation | null = null;
+		let uDispFactor: WebGLUniformLocation | null = null;
+		let uIntensity: WebGLUniformLocation | null = null;
+
+		let currentTexture: WebGLTexture | null = null;
+		let nextTexture: WebGLTexture | null = null;
+		let dispFactor = 0;
+
 		let renderScene = () => {};
 		let resize = () => {};
 		let syncVisibility = () => {};
 		let queueTransition = (_wait: number) => {};
 
-		void (async () => {
-			const {
-				LinearFilter,
-				Mesh,
-				OrthographicCamera,
-				PlaneGeometry,
-				Scene,
-				ShaderMaterial,
-				TextureLoader,
-				WebGLRenderer,
-			} = await import('three');
+		const createShader = (type: number, source: string) => {
+			if (!gl) return null;
+			const shader = gl.createShader(type);
+			if (!shader) return null;
+			gl.shaderSource(shader, source);
+			gl.compileShader(shader);
+			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+				const info = gl.getShaderInfoLog(shader);
+				gl.deleteShader(shader);
+				throw new Error(info || 'Shader compile failed');
+			}
+			return shader;
+		};
 
-			if (cancelled || !stage) return;
+		const createProgram = (vertSrc: string, fragSrc: string) => {
+			if (!gl) return null;
+			const vert = createShader(gl.VERTEX_SHADER, vertSrc);
+			const frag = createShader(gl.FRAGMENT_SHADER, fragSrc);
+			if (!vert || !frag) return null;
 
-			renderer = new WebGLRenderer({
-				alpha: true,
-				antialias: false,
-				powerPreference: 'low-power',
+			const prog = gl.createProgram();
+			if (!prog) return null;
+			gl.attachShader(prog, vert);
+			gl.attachShader(prog, frag);
+			gl.linkProgram(prog);
+			gl.deleteShader(vert);
+			gl.deleteShader(frag);
+
+			if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+				const info = gl.getProgramInfoLog(prog);
+				gl.deleteProgram(prog);
+				throw new Error(info || 'Program link failed');
+			}
+			return prog;
+		};
+
+		const bindTextureUnit = (unit: number, texture: WebGLTexture | null, location: WebGLUniformLocation | null) => {
+			if (!gl || !location) return;
+			gl.activeTexture(gl.TEXTURE0 + unit);
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.uniform1i(location, unit);
+		};
+
+		renderScene = () => {
+			if (cancelled || !gl || !program) return;
+
+			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+			gl.clearColor(0, 0, 0, 0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+			gl.useProgram(program);
+			bindTextureUnit(0, currentTexture, uCurrentImage);
+			bindTextureUnit(1, nextTexture, uNextImage);
+			gl.uniform1f(uDispFactor, dispFactor);
+			gl.uniform1f(uIntensity, intensity);
+			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+		};
+
+		const loadImage = (src: string) =>
+			new Promise<HTMLImageElement>((resolve, reject) => {
+				const image = new Image();
+				image.decoding = 'async';
+				image.onload = () => resolve(image);
+				image.onerror = () => reject(new Error(`Failed to load ${src}`));
+				image.src = src;
 			});
-			renderer.setClearColor(0x000000, 0);
 
-			const scene = new Scene();
-			const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-			camera.position.z = 1;
+		const createTextureFromImage = (image: HTMLImageElement) => {
+			if (!gl) throw new Error('Missing GL context');
+			const texture = gl.createTexture();
+			if (!texture) throw new Error('Failed to create texture');
 
-			material = new ShaderMaterial({
-				uniforms: {
-					currentImage: { value: null },
-					nextImage: { value: null },
-					dispFactor: { value: 0 },
-					intensity: { value: 0.3 },
-				},
-				vertexShader,
-				fragmentShader,
-				transparent: true,
-			});
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+			return texture;
+		};
 
-			mesh = new Mesh(new PlaneGeometry(2, 2), material);
-			scene.add(mesh);
-			stage.appendChild(renderer.domElement);
+		const loadedTextureCount = () => textures.filter(Boolean).length;
 
-			renderScene = () => {
-				if (!cancelled && renderer) {
-					renderer.render(scene, camera);
+		const getNextLoadedIndex = () => {
+			for (let offset = 1; offset < textures.length; offset += 1) {
+				const index = (currentIndex + offset) % textures.length;
+				if (textures[index]) return index;
+			}
+			return null;
+		};
+
+		const loadSlideTexture = async (index: number) => {
+			const image = await loadImage(slides[index].src);
+			if (cancelled || !gl) return;
+			const texture = createTextureFromImage(image);
+			if (cancelled) {
+				gl.deleteTexture(texture);
+				return;
+			}
+			textures[index] = texture;
+			return texture;
+		};
+
+		const preloadRemainingTextures = async (startIndex: number) => {
+			for (let index = startIndex; index < slides.length; index += 1) {
+				if (cancelled) return;
+				try {
+					await loadSlideTexture(index);
+					if (loadedTextureCount() > 1 && !isTransitioning && !transitionTimeout) {
+						queueTransition(gap);
+					}
+				} catch (error) {
+					console.error(`Failed to load slider image: ${slides[index].src}`, error);
 				}
-			};
+			}
+		};
 
-			const updatePixelRatio = () => {
-				const maxPixelRatio = window.innerWidth <= mobileBreakpoint ? 1.25 : 1.75;
-				renderer?.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
-			};
+		queueTransition = (wait: number) => {
+			if (transitionTimeout) clearTimeout(transitionTimeout);
 
-			resize = () => {
-				if (!stage || !renderer) return;
-				updatePixelRatio();
-				const size = Math.min(stage.clientWidth, stage.clientHeight);
-				renderer.setSize(size, size, false);
+			if (cancelled || document.hidden || loadedTextureCount() <= 1) {
+				return;
+			}
+
+			transitionTimeout = setTimeout(() => {
+				transitionTimeout = undefined;
+				if (!cancelled && !document.hidden && !isTransitioning) {
+					startTransition();
+				}
+			}, wait);
+		};
+
+		const startTransition = () => {
+			const fromTexture = textures[currentIndex];
+			const nextIndex = getNextLoadedIndex();
+			const toTexture = nextIndex === null ? undefined : textures[nextIndex];
+
+			if (!fromTexture || !toTexture || nextIndex === null) {
+				return;
+			}
+
+			isTransitioning = true;
+			currentTexture = fromTexture;
+			nextTexture = toTexture;
+			dispFactor = 0;
+
+			const startedAt = performance.now();
+
+			const tick = (now: number) => {
+				if (cancelled) return;
+
+				const progress = Math.min((now - startedAt) / (transitionDuration * 1000), 1);
+				dispFactor = easeInOutExpo(progress);
 				renderScene();
-			};
 
-			const loader = new TextureLoader();
-			const loadTexture = (src: string) =>
-				new Promise<Texture>((resolve, reject) => {
-					loader.load(
-						src,
-						(texture) => {
-							texture.minFilter = LinearFilter;
-							texture.magFilter = LinearFilter;
-							resolve(texture);
-						},
-						undefined,
-						reject,
-					);
-				});
-
-			const loadedTextureCount = () => textures.filter(Boolean).length;
-
-			const getNextLoadedIndex = () => {
-				for (let offset = 1; offset < textures.length; offset += 1) {
-					const index = (currentIndex + offset) % textures.length;
-					if (textures[index]) return index;
-				}
-
-				return null;
-			};
-
-			const loadSlideTexture = async (index: number) => {
-				const texture = await loadTexture(slides[index].src);
-				if (cancelled) {
-					texture.dispose();
+				if (progress < 1) {
+					transitionRafId = requestAnimationFrame(tick);
 					return;
 				}
 
-				textures[index] = texture;
-				return texture;
-			};
-
-			const preloadRemainingTextures = async (startIndex: number) => {
-				for (let index = startIndex; index < slides.length; index += 1) {
-					if (cancelled) return;
-
-					try {
-						await loadSlideTexture(index);
-						if (loadedTextureCount() > 1 && !isTransitioning && !transitionTimeout) {
-							queueTransition(gap);
-						}
-					} catch (error) {
-						console.error(`Failed to load slider image: ${slides[index].src}`, error);
-					}
-				}
-			};
-
-			queueTransition = (wait: number) => {
-				if (transitionTimeout) {
-					clearTimeout(transitionTimeout);
-				}
-
-				if (cancelled || document.hidden || loadedTextureCount() <= 1) {
-					return;
-				}
-
-				transitionTimeout = setTimeout(() => {
-					transitionTimeout = undefined;
-					if (!cancelled && !document.hidden && !isTransitioning) {
-						startTransition();
-					}
-				}, wait);
-			};
-
-			const startTransition = () => {
-				if (!material) return;
-
-				const currentTexture = textures[currentIndex];
-				const nextIndex = getNextLoadedIndex();
-				const nextTexture = nextIndex === null ? undefined : textures[nextIndex];
-
-				if (!currentTexture || !nextTexture || nextIndex === null) {
-					return;
-				}
-
-				isTransitioning = true;
-				material.uniforms.currentImage.value = currentTexture;
-				material.uniforms.nextImage.value = nextTexture;
-				material.uniforms.dispFactor.value = 0;
-
-				const startedAt = performance.now();
-
-				const tick = (now: number) => {
-					if (cancelled || !material) return;
-
-					const progress = Math.min((now - startedAt) / (transitionDuration * 1000), 1);
-					material.uniforms.dispFactor.value = easeInOutExpo(progress);
-					renderScene();
-
-					if (progress < 1) {
-						transitionRafId = requestAnimationFrame(tick);
-						return;
-					}
-
-					isTransitioning = false;
-					currentIndex = nextIndex;
-					material.uniforms.currentImage.value = nextTexture;
-					material.uniforms.dispFactor.value = 0;
-					renderScene();
-					queueTransition(gap);
-				};
-
-				transitionRafId = requestAnimationFrame(tick);
-			};
-
-			syncVisibility = () => {
-				if (document.hidden) {
-					if (transitionTimeout) {
-						clearTimeout(transitionTimeout);
-					}
-					cancelAnimationFrame(transitionRafId);
-					isTransitioning = false;
-					return;
-				}
-
+				isTransitioning = false;
+				currentIndex = nextIndex;
+				currentTexture = toTexture;
+				nextTexture = toTexture;
+				dispFactor = 0;
 				renderScene();
 				queueTransition(gap);
 			};
 
+			transitionRafId = requestAnimationFrame(tick);
+		};
+
+		syncVisibility = () => {
+			if (document.hidden) {
+				if (transitionTimeout) clearTimeout(transitionTimeout);
+				cancelAnimationFrame(transitionRafId);
+				isTransitioning = false;
+				return;
+			}
+
+			renderScene();
+			queueTransition(gap);
+		};
+
+		resize = () => {
+			if (!stage || !canvas || !gl) return;
+
+			const maxPixelRatio = window.innerWidth <= mobileBreakpoint ? 1.25 : 1.75;
+			const pixelRatio = Math.min(window.devicePixelRatio || 1, maxPixelRatio);
+			const size = Math.min(stage.clientWidth, stage.clientHeight);
+			const bufferSize = Math.max(1, Math.round(size * pixelRatio));
+
+			if (canvas.width !== bufferSize || canvas.height !== bufferSize) {
+				canvas.width = bufferSize;
+				canvas.height = bufferSize;
+			}
+
+			canvas.style.width = `${size}px`;
+			canvas.style.height = `${size}px`;
+			renderScene();
+		};
+
+		try {
+			canvas = document.createElement('canvas');
+			canvas.setAttribute('aria-hidden', 'true');
+			gl = canvas.getContext('webgl', {
+				alpha: true,
+				antialias: false,
+				depth: false,
+				stencil: false,
+				premultipliedAlpha: true,
+				powerPreference: 'low-power',
+			});
+
+			if (!gl) {
+				throw new Error('WebGL unavailable');
+			}
+
+			program = createProgram(vertexShaderSource, fragmentShaderSource);
+			if (!program) throw new Error('Failed to create program');
+
+			gl.useProgram(program);
+			uCurrentImage = gl.getUniformLocation(program, 'uCurrentImage');
+			uNextImage = gl.getUniformLocation(program, 'uNextImage');
+			uDispFactor = gl.getUniformLocation(program, 'uDispFactor');
+			uIntensity = gl.getUniformLocation(program, 'uIntensity');
+
+			buffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+				gl.STATIC_DRAW,
+			);
+
+			const aPosition = gl.getAttribLocation(program, 'aPosition');
+			gl.enableVertexAttribArray(aPosition);
+			gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+			gl.disable(gl.DEPTH_TEST);
+			gl.enable(gl.BLEND);
+			gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+			stage.appendChild(canvas);
 			resize();
 			window.addEventListener('resize', resize);
 			document.addEventListener('visibilitychange', syncVisibility);
 
-			try {
-				const firstTexture = await loadSlideTexture(0);
-				if (!firstTexture || !material) return;
+			void (async () => {
+				try {
+					const firstTexture = await loadSlideTexture(0);
+					if (!firstTexture || cancelled) return;
 
-				material.uniforms.currentImage.value = firstTexture;
-				material.uniforms.nextImage.value = firstTexture;
-				renderScene();
+					currentTexture = firstTexture;
+					nextTexture = firstTexture;
+					dispFactor = 0;
+					renderScene();
 
-				if (slides.length > 1) {
-					await loadSlideTexture(1);
-					if (!cancelled && textures[1]) {
-						material.uniforms.nextImage.value = textures[1];
-						queueTransition(initialDelay);
+					if (slides.length > 1) {
+						await loadSlideTexture(1);
+						if (!cancelled && textures[1]) {
+							nextTexture = textures[1] ?? firstTexture;
+							queueTransition(initialDelay);
+						}
+						void preloadRemainingTextures(2);
 					}
-
-					void preloadRemainingTextures(2);
+				} catch (error) {
+					console.error(`Failed to load slider image: ${slides[0].src}`, error);
 				}
-			} catch (error) {
-				console.error(`Failed to load slider image: ${slides[0].src}`, error);
-			}
-		})();
+			})();
+		} catch (error) {
+			console.error('Failed to initialize slider', error);
+		}
 
 		return () => {
 			cancelled = true;
@@ -301,12 +383,19 @@
 			document.removeEventListener('visibilitychange', syncVisibility);
 			if (transitionTimeout) clearTimeout(transitionTimeout);
 			cancelAnimationFrame(transitionRafId);
-			textures.forEach((texture) => texture?.dispose());
-			mesh?.geometry.dispose();
-			material?.dispose();
-			renderer?.dispose();
-			if (renderer && stage?.contains(renderer.domElement)) {
-				stage.removeChild(renderer.domElement);
+
+			if (gl) {
+				for (const texture of textures) {
+					if (texture) gl.deleteTexture(texture);
+				}
+				if (buffer) gl.deleteBuffer(buffer);
+				if (program) gl.deleteProgram(program);
+				const ext = gl.getExtension('WEBGL_lose_context');
+				ext?.loseContext();
+			}
+
+			if (canvas && stage?.contains(canvas)) {
+				stage.removeChild(canvas);
 			}
 		};
 	});
