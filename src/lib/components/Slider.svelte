@@ -150,6 +150,8 @@
 			gl.clearColor(0, 0, 0, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT);
 
+			if (!currentTexture || !nextTexture) return;
+
 			gl.useProgram(program);
 			bindTextureUnit(0, currentTexture, uCurrentImage);
 			bindTextureUnit(1, nextTexture, uNextImage);

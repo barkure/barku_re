@@ -94,6 +94,7 @@
 	<title>Barkure</title>
 	<meta name="description" content="Builder / Open Sourceror / Toolmaker" />
 	<meta name="theme-color" content="#0b0b0b" />
+	<link rel="preload" as="image" href="/images/me/1.webp" />
 </svelte:head>
 
 <div class="site-shell bg-(--color-bg-darken) text-(--color-text)">

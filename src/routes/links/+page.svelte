@@ -39,7 +39,6 @@
 			var(--color-bg-darken);
 		color: var(--color-text);
 		padding: 3.75rem;
-		transition: background-color 320ms ease;
 	}
 
 	.links-header {

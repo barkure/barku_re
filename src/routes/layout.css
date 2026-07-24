@@ -94,9 +94,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-user-select: none;
   user-select: none;
-  transition:
-    background-color 320ms ease,
-    color 320ms ease;
 }
 
 body::after {
@@ -145,7 +142,6 @@ a {
 
 .site-shell {
   position: relative;
-  transition: background-color 320ms ease;
 }
 
 .first-view {
@@ -246,7 +242,6 @@ a {
   margin-top: 7.5rem;
   background: var(--color-bg-darken);
   isolation: isolate;
-  transition: background-color 320ms ease;
 }
 
 .content-shell::before,
