@@ -25,7 +25,7 @@
   --glow-primary: rgba(0, 96, 255, 0.16);
   --glow-secondary: rgba(0, 140, 255, 0.07);
   --accent-soft: rgba(0, 96, 255, 0.08);
-  --slider-dot-opacity: 0.5;
+  --slider-dot-opacity: 0.7;
   --margin-side: 3.75rem;
   --dot-mask-size: clamp(14px, 1.35vw, 24px);
   --viewport-height: 100svh;
@@ -70,7 +70,7 @@
   );
   --glow-primary: rgba(0, 96, 255, 0.1);
   --glow-secondary: rgba(0, 140, 255, 0.05);
-  --slider-dot-opacity: 0.3;
+  --slider-dot-opacity: 0.45;
   color-scheme: light;
 }
 

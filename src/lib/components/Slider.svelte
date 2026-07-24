@@ -431,12 +431,13 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+		--dot-cell: calc(var(--dot-mask-size) / 5);
 		background-image: radial-gradient(
 			circle,
-			var(--color-bg) calc(var(--dot-mask-size) / 20),
-			transparent calc(var(--dot-mask-size) / 20 + 0.5px)
+			var(--color-bg) calc(var(--dot-cell) * 0.36),
+			transparent calc(var(--dot-cell) * 0.36 + 0.5px)
 		);
-		background-size: calc(var(--dot-mask-size) / 5) calc(var(--dot-mask-size) / 5);
+		background-size: var(--dot-cell) var(--dot-cell);
 		opacity: var(--slider-dot-opacity, 0.5);
 	}
 
