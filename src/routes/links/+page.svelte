@@ -5,20 +5,24 @@
 <svelte:head>
 	<title>Links - Barkure</title>
 	<meta name="description" content="Links of Barkure" />
-	<meta name="theme-color" content="#181818" />
+	<meta name="theme-color" content="#0b0b0b" />
 </svelte:head>
 
 <div class="links-page">
 	<header class="links-header">
 		<a class="back-link" href="/">Back to Barkure</a>
-		<h1 class="links-title" style="color: var(--hero-title-color);">Links</h1>
+		<h1 class="links-title">Links</h1>
 	</header>
 
 	<section class="links-panel" aria-label="Links">
 		<ul class="links-list">
-			{#each friendLinks as link}
-				<li>
-					<a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+			{#each friendLinks as link, i}
+				<li style={`--i: ${i}`}>
+					<a href={link.href} target="_blank" rel="noreferrer">
+						<span class="link-index">{String(i + 1).padStart(2, '0')}</span>
+						<span class="link-label">{link.label}</span>
+						<span class="link-arrow" aria-hidden="true">↗</span>
+					</a>
 				</li>
 			{/each}
 		</ul>
@@ -30,21 +34,23 @@
 		min-height: 100vh;
 		min-height: 100svh;
 		background:
-			radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 34%),
-			radial-gradient(circle at top right, rgba(255, 255, 255, 0.025), transparent 30%),
+			radial-gradient(circle at top left, var(--glow-primary), transparent 34%),
+			radial-gradient(circle at top right, var(--glow-secondary), transparent 30%),
 			var(--color-bg-darken);
 		color: var(--color-text);
 		padding: 3.75rem;
+		transition: background-color 320ms ease;
 	}
 
 	.links-header {
 		max-width: 72rem;
 		margin: 0 auto;
+		animation: links-rise 640ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 	}
 
 	.back-link {
 		display: inline-block;
-		color: rgba(255, 255, 255, 0.54);
+		color: var(--color-text-dim);
 		font-size: 2.35rem;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
@@ -57,6 +63,7 @@
 
 	.links-title {
 		margin: 1.4rem 0 0;
+		color: var(--hero-title-color);
 		font-size: clamp(2.35rem, 5.2vw, 4.1rem);
 		font-weight: 700;
 		line-height: 0.96;
@@ -76,24 +83,86 @@
 
 	.links-list li {
 		min-width: 0;
+		animation: links-rise 560ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+		animation-delay: calc(120ms + var(--i) * 55ms);
 	}
 
 	.links-list a {
-		display: block;
-		padding: 0.52rem 0;
-		color: rgba(255, 255, 255, 0.72);
+		position: relative;
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		padding: 0.52rem 0.75rem;
+		margin: 0 -0.75rem;
+		border-radius: 0.5rem;
+		color: var(--color-link-text);
 		font-size: clamp(1.85rem, 2.85vw, 2.45rem);
 		font-weight: 540;
 		line-height: 1.45;
 		text-decoration: none;
 		transition:
-			color 120ms ease,
-			transform 120ms ease;
+			color 140ms ease,
+			background-color 140ms ease,
+			transform 140ms ease;
 	}
 
 	.links-list a:hover {
 		color: var(--hero-title-color);
+		background: var(--accent-soft);
 		transform: translateX(0.18rem);
+	}
+
+	.link-index {
+		color: var(--color-text-faint);
+		font-size: 0.55em;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		transition: color 140ms ease;
+	}
+
+	.links-list a:hover .link-index {
+		color: var(--hero-title-color);
+	}
+
+	.link-label {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.link-arrow {
+		margin-left: auto;
+		font-size: 0.7em;
+		opacity: 0;
+		transform: translate(-0.2rem, 0.2rem);
+		transition:
+			opacity 140ms ease,
+			transform 140ms ease;
+	}
+
+	.links-list a:hover .link-arrow {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+
+	@keyframes links-rise {
+		from {
+			opacity: 0;
+			transform: translateY(1.4rem);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.links-header,
+		.links-list li {
+			animation: none;
+		}
 	}
 
 	@media (max-width: 767px) {
@@ -119,9 +188,13 @@
 		}
 
 		.links-list a {
-			padding: 0.65rem 0;
+			padding: 0.65rem 0.75rem;
 			font-size: 1.7rem;
 			-webkit-tap-highlight-color: transparent;
+		}
+
+		.link-arrow {
+			display: none;
 		}
 	}
 </style>

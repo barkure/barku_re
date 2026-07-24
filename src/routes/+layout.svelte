@@ -8,7 +8,19 @@
 	let scrollbarActive = $state(false);
 	let scrollbarStyle = $state('--scrollbar-thumb-top: 0px; --scrollbar-thumb-height: 72px;');
 
+	const applyTheme = (next: 'dark' | 'light') => {
+		document.documentElement.dataset.theme = next;
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute('content', next === 'light' ? '#f4f4f4' : '#0b0b0b');
+	};
+
 	onMount(() => {
+		const media = window.matchMedia('(prefers-color-scheme: dark)');
+		const syncTheme = () => applyTheme(media.matches ? 'dark' : 'light');
+		syncTheme();
+		media.addEventListener('change', syncTheme);
+
 		let frameId = 0;
 		let scrollIdleTimeout: ReturnType<typeof setTimeout> | undefined;
 
@@ -70,6 +82,7 @@
 		window.addEventListener('load', queueScrollbarSync);
 
 		return () => {
+			media.removeEventListener('change', syncTheme);
 			if (frameId) window.cancelAnimationFrame(frameId);
 			if (scrollIdleTimeout) clearTimeout(scrollIdleTimeout);
 			resizeObserver.disconnect();

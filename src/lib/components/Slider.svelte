@@ -424,10 +424,25 @@
 		transform-origin: 50% 100%;
 	}
 
+	.slider-stage::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background-image: radial-gradient(
+			circle,
+			var(--color-bg) calc(var(--dot-mask-size) / 20),
+			transparent calc(var(--dot-mask-size) / 20 + 0.5px)
+		);
+		background-size: calc(var(--dot-mask-size) / 5) calc(var(--dot-mask-size) / 5);
+		opacity: var(--slider-dot-opacity, 0.5);
+	}
+
 	.slider-stage :global(canvas) {
 		display: block;
 		height: 100%;
 		width: 100%;
+		filter: brightness(var(--slider-photo-brightness, 1));
 	}
 
 	@media (max-width: 767px) {

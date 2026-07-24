@@ -8,6 +8,8 @@
 	const EMAIL_ADDRESS = 'hi@barku.re';
 
 	let contentShell: HTMLElement | null = null;
+	let descriptionBlock: HTMLElement | null = null;
+	let networkList: HTMLElement | null = null;
 	let isContentPinned = $state(false);
 	let hoveredNetworkAction = $state('');
 	let hoveredNetworkTarget = $state('');
@@ -53,9 +55,36 @@
 		window.addEventListener('scroll', syncPinnedState, { passive: true });
 		window.addEventListener('resize', syncPinnedState);
 
+		const revealNodes = [
+			descriptionBlock,
+			...(networkList ? Array.from(networkList.children) : []),
+		].filter((node): node is HTMLElement => !!node);
+
+		let observer: IntersectionObserver | undefined;
+		if ('IntersectionObserver' in window && revealNodes.length > 0) {
+			observer = new IntersectionObserver(
+				(entries) => {
+					for (const entry of entries) {
+						if (entry.isIntersecting) {
+							entry.target.classList.add('is-in');
+							observer?.unobserve(entry.target);
+						}
+					}
+				},
+				{ threshold: 0.2 },
+			);
+
+			revealNodes.forEach((node, index) => {
+				node.classList.add('reveal');
+				node.style.transitionDelay = `${Math.min(index * 70, 420)}ms`;
+				observer?.observe(node);
+			});
+		}
+
 		return () => {
 			window.removeEventListener('scroll', syncPinnedState);
 			window.removeEventListener('resize', syncPinnedState);
+			observer?.disconnect();
 			if (copyNoticeTimeout) clearTimeout(copyNoticeTimeout);
 		};
 	});
@@ -64,13 +93,13 @@
 <svelte:head>
 	<title>Barkure</title>
 	<meta name="description" content="Builder / Open Sourceror / Toolmaker" />
-	<meta name="theme-color" content="#181818" />
+	<meta name="theme-color" content="#0b0b0b" />
 </svelte:head>
 
 <div class="site-shell bg-(--color-bg-darken) text-(--color-text)">
 	<section class="first-view">
 		<header class="hero-copy">
-			<h1 class="hero-title" style="color: var(--hero-title-color);">
+			<h1 class="hero-title">
 				<span>Barkure<span class="sp-break"></span></span>
 			</h1>
 			<p class="hero-subtitle">Builder / Open Sourceror / Toolmaker</p>
@@ -87,7 +116,7 @@
 	</section>
 
 	<main class="content-shell" class:is-pinned={isContentPinned} bind:this={contentShell}>
-		<section class="description-block" lang="en">
+		<section class="description-block" lang="en" bind:this={descriptionBlock}>
 			<p>
 				Hi, I'm <span class="hero-intro-name" style="color: var(--hero-title-color);">Barkure</span
 				>,
@@ -96,7 +125,7 @@
 		</section>
 
 		<section class="tag-block">
-			<ul>
+			<ul bind:this={networkList}>
 				{#each networkItems as item}
 					<li class="network-item">
 						{#if isEmailHref(item.href)}
