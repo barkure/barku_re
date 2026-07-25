@@ -17,7 +17,7 @@
 	const isExternalHref = (href: string) => href.startsWith('http');
 	const isEmailHref = (href: string) => href.startsWith('mailto:');
 	const getNetworkTarget = (href: string, label: string) => (isEmailHref(href) ? EMAIL_ADDRESS : label);
-	const getNetworkAction = (href: string) => (isEmailHref(href) ? 'Email:' : 'Go to:');
+	const getNetworkAction = (href: string) => (isEmailHref(href) ? 'Write to' : 'Visit');
 
 	const syncNetworkTarget = (href: string, label: string) => {
 		hoveredNetworkAction = getNetworkAction(href);
@@ -78,7 +78,7 @@
 <svelte:head>
 	<title>Barkure</title>
 	<meta name="description" content="Builder / Open Sourceror / Toolmaker" />
-	<meta name="theme-color" content="#0b0b0b" />
+	<meta name="theme-color" content="#0c0d12" />
 	<link rel="preload" as="image" href="/images/me/1.webp" />
 </svelte:head>
 

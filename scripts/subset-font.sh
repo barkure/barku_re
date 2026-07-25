@@ -3,8 +3,6 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-FONT_URL='https://raw.githubusercontent.com/googlefonts/roboto-2/main/src/variable/Roboto%5Bwdth%2Cwght%5D.ttf'
-OUTPUT="$ROOT/static/fonts/Roboto.woff2"
 
 # Latin + Latin-1 Supplement covers the English UI copy.
 UNICODES=${1:-U+0020-007E,U+00A0-00FF}
@@ -14,26 +12,44 @@ printf 'Unicode range: %s\n' "$UNICODES"
 WORK_DIR=$(mktemp -d)
 trap 'rm -rf "$WORK_DIR"' EXIT HUP INT TERM
 
-curl -fL --retry 3 --output "$WORK_DIR/Roboto-Variable.ttf" "$FONT_URL"
+# subset_font <name> <url> [varLib.instancer axis args...]
+subset_font() {
+  name=$1
+  url=$2
+  shift 2
 
-uvx --from 'fonttools[woff]' fonttools varLib.instancer \
-  "$WORK_DIR/Roboto-Variable.ttf" \
-  wdth=100 \
-  wght=400:700 \
-  -o "$WORK_DIR/Roboto-instanced.ttf"
+  curl -fL --retry 3 --output "$WORK_DIR/$name.ttf" "$url"
 
-uvx --from 'fonttools[woff]' pyftsubset \
-  "$WORK_DIR/Roboto-instanced.ttf" \
-  --output-file="$OUTPUT" \
-  --flavor=woff2 \
-  --unicodes="$UNICODES" \
-  --layout-features='kern,liga,calt' \
-  --name-IDs='*' \
-  --name-legacy \
-  --name-languages='*' \
-  --notdef-glyph \
-  --notdef-outline \
-  --recommended-glyphs \
-  --recalc-bounds
+  src="$WORK_DIR/$name.ttf"
+  if [ $# -gt 0 ]; then
+    uvx --from 'fonttools[woff]' fonttools varLib.instancer \
+      "$src" \
+      "$@" \
+      -o "$WORK_DIR/$name-instanced.ttf"
+    src="$WORK_DIR/$name-instanced.ttf"
+  fi
 
-printf 'Generated %s (%s bytes)\n' "$OUTPUT" "$(wc -c < "$OUTPUT" | tr -d ' ')"
+  uvx --from 'fonttools[woff]' pyftsubset \
+    "$src" \
+    --output-file="$ROOT/static/fonts/$name.woff2" \
+    --flavor=woff2 \
+    --unicodes="$UNICODES" \
+    --layout-features='kern,liga,calt' \
+    --name-IDs='*' \
+    --name-legacy \
+    --name-languages='*' \
+    --notdef-glyph \
+    --notdef-outline \
+    --recommended-glyphs \
+    --recalc-bounds
+
+  printf 'Generated %s (%s bytes)\n' "$ROOT/static/fonts/$name.woff2" "$(wc -c < "$ROOT/static/fonts/$name.woff2" | tr -d ' ')"
+}
+
+subset_font Roboto \
+  'https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/Roboto%5Bwdth%2Cwght%5D.ttf' \
+  wdth=100 wght=400:700
+
+subset_font PlayfairDisplay-Italic \
+  'https://raw.githubusercontent.com/google/fonts/main/ofl/playfairdisplay/PlayfairDisplay-Italic%5Bwght%5D.ttf' \
+  wght=400:600

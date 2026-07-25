@@ -1,14 +1,25 @@
 <script lang="ts">
 	import { friendLinks } from '$lib/content/friends';
+
+	let linksPage: HTMLElement | null = null;
+
+	const handlePointerMove = (event: PointerEvent) => {
+		if (!linksPage || event.pointerType !== 'mouse') return;
+		const rect = linksPage.getBoundingClientRect();
+		linksPage.style.setProperty('--mx', `${event.clientX - rect.left}px`);
+		linksPage.style.setProperty('--my', `${event.clientY - rect.top}px`);
+	};
 </script>
 
 <svelte:head>
 	<title>Links - Barkure</title>
 	<meta name="description" content="Links of Barkure" />
-	<meta name="theme-color" content="#0b0b0b" />
+	<meta name="theme-color" content="#0c0d12" />
 </svelte:head>
 
-<div class="links-page">
+<svelte:window onpointermove={handlePointerMove} />
+
+<div class="links-page" bind:this={linksPage}>
 	<header class="links-header">
 		<a class="back-link" href="/">Back to Barkure</a>
 		<h1 class="links-title">Links</h1>
@@ -31,6 +42,7 @@
 
 <style>
 	.links-page {
+		position: relative;
 		min-height: 100vh;
 		min-height: 100svh;
 		background:
@@ -39,6 +51,24 @@
 			var(--color-bg-darken);
 		color: var(--color-text);
 		padding: 3.75rem;
+	}
+
+	.links-page::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: radial-gradient(
+			24rem 24rem at var(--mx, 50%) var(--my, 18%),
+			var(--glow-primary),
+			transparent 72%
+		);
+	}
+
+	.links-header,
+	.links-panel {
+		position: relative;
+		z-index: 1;
 	}
 
 	.links-header {
@@ -82,6 +112,7 @@
 
 	.links-list li {
 		min-width: 0;
+		border-bottom: 1px solid var(--hairline);
 		animation: links-rise 560ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 		animation-delay: calc(120ms + var(--i) * 55ms);
 	}
