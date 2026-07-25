@@ -420,6 +420,7 @@
 
 	.slider-stage {
 		position: relative;
+		flex-shrink: 0;
 		height: min(96vw, 62rem, calc(100vh - 11rem));
 		width: min(96vw, 62rem, calc(100vh - 11rem));
 		transform: scale(0.98);

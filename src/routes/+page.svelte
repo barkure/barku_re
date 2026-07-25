@@ -13,10 +13,8 @@
 	let isContentPinned = $state(false);
 	let hoveredNetworkAction = $state('');
 	let hoveredNetworkTarget = $state('');
-	let copyNoticeVisible = $state(false);
-	let copyNoticeTimeout: ReturnType<typeof setTimeout> | undefined;
 
-	const isExternalHref = (href: string) => !href.startsWith('/');
+	const isExternalHref = (href: string) => href.startsWith('http');
 	const isEmailHref = (href: string) => href.startsWith('mailto:');
 	const getNetworkTarget = (href: string, label: string) => (isEmailHref(href) ? EMAIL_ADDRESS : label);
 	const getNetworkAction = (href: string) => (isEmailHref(href) ? 'Email:' : 'Go to:');
@@ -29,18 +27,6 @@
 	const clearNetworkTarget = () => {
 		hoveredNetworkAction = '';
 		hoveredNetworkTarget = '';
-	};
-
-	const copyEmailAddress = async () => {
-		await navigator.clipboard.writeText(EMAIL_ADDRESS);
-		hoveredNetworkAction = 'Copied!';
-		hoveredNetworkTarget = '';
-		copyNoticeVisible = true;
-		if (copyNoticeTimeout) clearTimeout(copyNoticeTimeout);
-		copyNoticeTimeout = setTimeout(() => {
-			copyNoticeVisible = false;
-			copyNoticeTimeout = undefined;
-		}, 2000);
 	};
 
 	onMount(() => {
@@ -85,7 +71,6 @@
 			window.removeEventListener('scroll', syncPinnedState);
 			window.removeEventListener('resize', syncPinnedState);
 			observer?.disconnect();
-			if (copyNoticeTimeout) clearTimeout(copyNoticeTimeout);
 		};
 	});
 </script>
@@ -129,40 +114,22 @@
 			<ul bind:this={networkList}>
 				{#each networkItems as item}
 					<li class="network-item">
-						{#if isEmailHref(item.href)}
-							<button
-								class="tag-item"
-								type="button"
-								aria-label="Copy email address"
-								onmouseenter={() => syncNetworkTarget(item.href, item.label)}
-								onmouseleave={clearNetworkTarget}
-								onfocus={() => syncNetworkTarget(item.href, item.label)}
-								onblur={clearNetworkTarget}
-								onclick={copyEmailAddress}
-							>
-								<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
-									<Icon icon={item.icon} />
-								</span>
-								<span class="tag-label">{item.label}</span>
-							</button>
-						{:else}
-							<a
-								class="tag-item"
-								href={item.href}
-								target={isExternalHref(item.href) ? '_blank' : undefined}
-								rel={isExternalHref(item.href) ? 'noreferrer' : undefined}
-								aria-label={item.label}
-								onmouseenter={() => syncNetworkTarget(item.href, item.label)}
-								onmouseleave={clearNetworkTarget}
-								onfocus={() => syncNetworkTarget(item.href, item.label)}
-								onblur={clearNetworkTarget}
-							>
-								<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
-									<Icon icon={item.icon} />
-								</span>
-								<span class="tag-label">{item.label}</span>
-							</a>
-						{/if}
+						<a
+							class="tag-item"
+							href={item.href}
+							target={isExternalHref(item.href) ? '_blank' : undefined}
+							rel={isExternalHref(item.href) ? 'noreferrer' : undefined}
+							aria-label={item.label}
+							onmouseenter={() => syncNetworkTarget(item.href, item.label)}
+							onmouseleave={clearNetworkTarget}
+							onfocus={() => syncNetworkTarget(item.href, item.label)}
+							onblur={clearNetworkTarget}
+						>
+							<span class="tag-icon" class:is-x-icon={item.icon === 'lineicons:x'}>
+								<Icon icon={item.icon} />
+							</span>
+							<span class="tag-label">{item.label}</span>
+						</a>
 					</li>
 				{/each}
 			</ul>
@@ -172,9 +139,6 @@
 					{hoveredNetworkTarget}
 				{/if}
 			</p>
-			{#if copyNoticeVisible}
-				<p class="copy-notice" aria-live="polite">Copied to clipboard.</p>
-			{/if}
 		</section>
 	</main>
 </div>
