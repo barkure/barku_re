@@ -15,4 +15,5 @@ export const friendLinks: FriendLink[] = [
   { href: "https://www.octautumn.cn/", label: "拾秋" },
   { href: "https://www.grtsinry43.com/", label: "Grtsinry43" },
   { href: "https://takuron.com", label: "Takuron" },
+  { href: "https://54sher.com", label: "升华工作室" },
 ];
