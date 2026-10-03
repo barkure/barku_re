@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { friendLinks } from '$lib/content/friends';
+	import { friendLinks } from '#lib/content/friends.js';
 
 	let linksPage: HTMLElement | null = null;
 

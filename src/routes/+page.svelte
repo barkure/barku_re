@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
-	import Slider from '$lib/components/Slider.svelte';
-	import { heroIntroBody, heroSlides, networkItems } from '$lib/content/homepage';
+	import Slider from '#lib/components/Slider.svelte';
+	import { heroIntroBody, heroSlides, networkItems } from '#lib/content/homepage.js';
 
 	const MOBILE_BREAKPOINT = 767;
 	const EMAIL_ADDRESS = 'hi@barku.re';
