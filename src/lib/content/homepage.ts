@@ -38,7 +38,7 @@ export const networkItems: NetworkItem[] = [
   },
   {
     icon: "lineicons:x",
-    label: "X, formerly Twitter",
+    label: "X, FKA Twitter",
     href: "https://x.com/TheBarkure",
   },
   {
