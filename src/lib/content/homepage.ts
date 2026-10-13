@@ -5,7 +5,7 @@ export type Slide = {
 export type NetworkItem = {
   icon: string;
   label: string;
-  href: string;
+  href?: string;
 };
 
 export const heroIntroBody =
@@ -44,7 +44,6 @@ export const networkItems: NetworkItem[] = [
   {
     icon: "mdi:email",
     label: "Email",
-    href: "mailto:hi@barku.re",
   },
   {
     icon: "bx:link",

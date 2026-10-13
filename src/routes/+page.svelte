@@ -5,7 +5,7 @@
 	import { heroIntroBody, heroSlides, networkItems } from '#lib/content/homepage.js';
 
 	const MOBILE_BREAKPOINT = 767;
-	const EMAIL_ADDRESS = 'hi@barku.re';
+	const EMAIL_ADDRESS = 'the.barkure[at]gmail.com';
 
 	let contentShell: HTMLElement | null = null;
 	let descriptionBlock: HTMLElement | null = null;
@@ -14,12 +14,22 @@
 	let hoveredNetworkAction = $state('');
 	let hoveredNetworkTarget = $state('');
 
-	const isExternalHref = (href: string) => href.startsWith('http');
-	const isEmailHref = (href: string) => href.startsWith('mailto:');
-	const getNetworkTarget = (href: string, label: string) => (isEmailHref(href) ? EMAIL_ADDRESS : label);
-	const getNetworkAction = (href: string) => (isEmailHref(href) ? 'Write to' : 'Visit');
+	const isExternalHref = (href?: string) => href?.startsWith('http');
+	const isEmailHref = (href?: string) => !href;
+	const getNetworkTarget = (href: string | undefined, label: string) => (isEmailHref(href) ? EMAIL_ADDRESS : label);
+	const getNetworkAction = (href: string | undefined) => (isEmailHref(href) ? 'Copy' : 'Visit');
 
-	const syncNetworkTarget = (href: string, label: string) => {
+	const copyEmail = async () => {
+		try {
+			await navigator.clipboard.writeText(EMAIL_ADDRESS);
+			hoveredNetworkAction = 'Copied';
+		} catch {
+			hoveredNetworkAction = 'Copy failed';
+		}
+		hoveredNetworkTarget = '';
+	};
+
+	const syncNetworkTarget = (href: string | undefined, label: string) => {
 		hoveredNetworkAction = getNetworkAction(href);
 		hoveredNetworkTarget = getNetworkTarget(href, label);
 	};
@@ -114,6 +124,21 @@
 			<ul bind:this={networkList}>
 				{#each networkItems as item}
 					<li class="network-item">
+						{#if !item.href}
+							<button
+								type="button"
+								class="tag-item"
+								aria-label="Copy email"
+								onclick={copyEmail}
+								onmouseenter={() => syncNetworkTarget(item.href, item.label)}
+								onmouseleave={clearNetworkTarget}
+								onfocus={() => syncNetworkTarget(item.href, item.label)}
+								onblur={clearNetworkTarget}
+							>
+								<span class="tag-icon"><Icon icon={item.icon} /></span>
+								<span class="tag-label">{item.label}</span>
+							</button>
+						{:else}
 						<a
 							class="tag-item"
 							href={item.href}
@@ -130,6 +155,7 @@
 							</span>
 							<span class="tag-label">{item.label}</span>
 						</a>
+						{/if}
 					</li>
 				{/each}
 			</ul>
