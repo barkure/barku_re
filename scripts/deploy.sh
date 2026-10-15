@@ -4,7 +4,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-pnpm build
+npm run build
 
 # COPYFILE_DISABLE + --no-xattrs: macOS bsdtar 不往流里塞 ._* AppleDouble 文件
 COPYFILE_DISABLE=1 tar --no-xattrs -C build -cf - . | ssh DMIT-LAX '
